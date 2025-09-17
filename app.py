@@ -20,18 +20,29 @@ MODEL_PATH = OUTPUT_DIR / "mobilenetv2_ham10000.keras"
 CLASS_INDEX_PATH = OUTPUT_DIR / "class_indices.json"
 
 # Function to download and extract outputs.zip if outputs folder does not exist
+def download_file_from_google_drive(id, destination):
+    """Download a large file from Google Drive by handling the confirmation token."""
+    URL = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+    response = session.get(URL, params={'id': id}, stream=True)
+    token = None
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            token = value
+    if token:
+        params = {'id': id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+    with open(destination, 'wb') as f:
+        for chunk in response.iter_content(32768):
+            if chunk:
+                f.write(chunk)
+
 def download_and_extract_outputs():
     outputs_folder = 'outputs'
     zip_path = 'outputs.zip'
-    gdrive_url = 'https://drive.google.com/uc?export=download&id=1CM6-mKThotW89oXLed0KmXf-f5MlUkPO'
+    gdrive_file_id = '1CM6-mKThotW89oXLed0KmXf-f5MlUkPO'
     if not os.path.exists(outputs_folder):
-        # Download the zip file
-        with requests.get(gdrive_url, stream=True) as r:
-            r.raise_for_status()
-            with open(zip_path, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-        # Extract the zip file
+        download_file_from_google_drive(gdrive_file_id, zip_path)
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall('.')
         os.remove(zip_path)
@@ -96,3 +107,5 @@ if uploaded:
     st.info("This app is for educational purposes only and is **not** a medical diagnosis or prescription.")
 else:
     st.write("Please upload a lesion image to get a prediction.")
+
+
