@@ -40,9 +40,13 @@ def download_file_from_google_drive(id, destination):
 def download_and_extract_outputs():
     outputs_folder = 'outputs'
     zip_path = 'outputs.zip'
-    gdrive_file_id = '1CM6-mKThotW89oXLed0KmXf-f5MlUkPO'
+    dropbox_url = 'https://www.dropbox.com/scl/fi/tx9z8e0hkwlkhni90autm/outputs.zip?rlkey=kfmq0d8x8ytp6cxnv3h1pugnb&st=unysm0sd&dl=1'  # dl=1 for direct download
     if not os.path.exists(outputs_folder):
-        download_file_from_google_drive(gdrive_file_id, zip_path)
+        with requests.get(dropbox_url, stream=True) as r:
+            r.raise_for_status()
+            with open(zip_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall('.')
         os.remove(zip_path)
@@ -107,5 +111,4 @@ if uploaded:
     st.info("This app is for educational purposes only and is **not** a medical diagnosis or prescription.")
 else:
     st.write("Please upload a lesion image to get a prediction.")
-
 
