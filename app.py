@@ -75,7 +75,7 @@ def load_and_prep_image(img_bytes, target_size=(224,224)):
 # Educational medicine recommendations
 def safe_recommendation(label):
     suggestions = {
-        "nv": "Likely benign melanocytic nevus. Monitor changes (ABCDE). Use sunscreen SPF 30+. See dermatologist if evolving.",
+        "nv": "Likely benign melanocytic nevus. Monitor changes. Use sunscreen SPF 30+. See dermatologist if evolving.",
         "mel": "Possible melanoma — urgent dermatologist evaluation recommended. Do not self-medicate.",
         "bkl": "Benign keratosis-like lesion. Usually harmless; consider dermatologist consult if symptomatic.",
         "bcc": "Basal cell carcinoma — seek prompt dermatologist evaluation.",
@@ -111,4 +111,5 @@ if uploaded:
     st.info("This app is for educational purposes only and is **not** a medical diagnosis or prescription.")
 else:
     st.write("Please upload a lesion image to get a prediction.")
+
 
