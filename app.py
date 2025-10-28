@@ -64,6 +64,20 @@ download_and_extract_outputs()
 model, idx2class = load_artifacts()
 class_names = [idx2class[i] for i in sorted(idx2class.keys())]
 
+# Mapping short labels to full disease names
+LABEL_FULLNAME = {
+    "akiec": "Actinic Keratoses and Intraepithelial Carcinoma",
+    "bcc": "Basal Cell Carcinoma",
+    "bkl": "Benign Keratosis-Like Lesions",
+    "df": "Dermatofibroma",
+    "mel": "Melanoma",
+    "nv": "Melanocytic Nevi (Moles)",
+    "vasc": "Vascular Lesions",
+}
+
+def label_to_full(label):
+    """Return the full disease name for a short pred label."""
+    return LABEL_FULLNAME.get(label, label)
 # Image preprocessing
 def load_and_prep_image(img_bytes, target_size=(224,224)):
     img = Image.open(img_bytes).convert("RGB").resize(target_size)
@@ -97,12 +111,15 @@ if uploaded:
         pred_label = class_names[pred_idx]
         confidence = float(probs[pred_idx])
 
-    st.subheader(f"Prediction: **{pred_label}**")
+    # Map short label to full disease name for display
+    full_disease_name = label_to_full(pred_label)
+    st.subheader(f"Prediction: **{full_disease_name}** ({pred_label})")
     st.write(f"Confidence: {confidence:.2%}")
 
-    # Probability table
-    prob_table = {class_names[i]: float(probs[i]) for i in range(len(class_names))}
-    st.write(pd.DataFrame([prob_table]).T.rename(columns={0:"probability"}))
+    # Probability table (show full disease names)
+    prob_table = {label_to_full(class_names[i]): float(probs[i]) for i in range(len(class_names))}
+    prob_df = pd.DataFrame(list(prob_table.items()), columns=["disease", "probability"]).set_index("disease")
+    st.write(prob_df)
 
     # Educational guidance
     st.divider()
@@ -111,7 +128,3 @@ if uploaded:
     st.info("This app is for educational purposes only and is **not** a medical diagnosis or prescription.")
 else:
     st.write("Please upload a lesion image to get a prediction.")
-
-
-
-
